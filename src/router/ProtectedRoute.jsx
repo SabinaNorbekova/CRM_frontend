@@ -1,9 +1,12 @@
 import { Navigate } from "react-router-dom";
+import { getToken, getUserFromToken, removeToken } from "../utils/auth";
 
 export default function ProtectedRoute({ children }) {
-  const token = localStorage.getItem("accessToken");
+  const token = getToken();
+  const user = getUserFromToken();
 
-  if (!token) {
+  if (!token || !user) {
+    removeToken();
     return <Navigate to="/" replace />;
   }
 

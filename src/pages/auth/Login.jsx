@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -26,19 +26,19 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState("");
 
-  useEffect(() => {
-    const user = getUserFromToken();
+//   useEffect(() => {
+//     const user = getUserFromToken();
 
-    if (!user?.role) return;
+//     if (!user?.role) return;
 
-    if (isAdminRole(user.role)) {
-      navigate("/admin");
-    } else if (user.role === "TEACHER") {
-      navigate("/teacher");
-    } else if (user.role === "STUDENT") {
-      navigate("/student");
-    }
-  }, [navigate]);
+//     if (isAdminRole(user.role)) {
+//       navigate("/admin", { replace: true });
+//     } else if (user.role === "TEACHER") {
+//       navigate("/teacher", { replace: true });
+//     } else if (user.role === "STUDENT") {
+//       navigate("/student", { replace: true });
+//     }
+//   }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,44 +50,43 @@ export default function Login() {
 
     if (errorText) setErrorText("");
   };
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  if (!formData.login.trim() || !formData.password.trim()) {
+    setErrorText("Login va parolni kiriting");
+    return;
+  }
 
-    if (!formData.login.trim() || !formData.password.trim()) {
-      setErrorText("Login va parolni kiriting");
-      return;
-    }
+  try {
+    setLoading(true);
+    setErrorText("");
 
-    try {
-      setLoading(true);
-      setErrorText("");
+    const res = await loginUser(formData);
 
-      const res = await loginUser(formData);
+    if (res?.accessToken) {
+      saveToken(res.accessToken);
 
-      if (res?.accessToken) {
-        saveToken(res.accessToken);
+      const user = getUserFromToken();
 
-        const user = getUserFromToken();
-
-        if (isAdminRole(user?.role)) {
-          navigate("/admin");
-        } else if (user?.role === "TEACHER") {
-          navigate("/teacher");
-        } else if (user?.role === "STUDENT") {
-          navigate("/student");
-        } else {
-          setErrorText("Foydalanuvchi roli topilmadi");
-        }
+      if (isAdminRole(user?.role)) {
+        navigate("/admin", { replace: true });
+      } else if (user?.role === "TEACHER") {
+        navigate("/teacher", { replace: true });
+      } else if (user?.role === "STUDENT") {
+        navigate("/student", { replace: true });
+      } else {
+        setErrorText("Foydalanuvchi roli topilmadi");
       }
-    } catch (error) {
-      setErrorText(
-        error?.response?.data?.message || "Login yoki parol noto'g'ri"
-      );
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    setErrorText(
+      error?.response?.data?.message || "Login yoki parol noto‘g‘ri"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <Box className="min-h-screen w-full flex">
